@@ -42,12 +42,13 @@ jobs:
     - name: Checkout
       uses: actions/checkout@main
 
-    - name: Initialization environment
+    - name: 初始化环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
         dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 100
         df -h
+        : <<'COMMENT'
         echo "Removing large packages"
         sudo apt-get remove -y '^dotnet-.*'
         sudo apt-get remove -y '^llvm-.*'
@@ -66,6 +67,7 @@ jobs:
         sudo rm -rf /usr/local/share/chromium
         sudo rm -rf /usr/local/lib/android
         sudo rm -rf /usr/local/lib/node_modules
+        COMMENT
         df -h
         sudo -E apt-get -qq update
         sudo -E apt-get -qq install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
@@ -80,40 +82,40 @@ jobs:
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
 
-    - name: Clone source code
+    - name: 克隆源码
       working-directory: /workdir
       run: |
         df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
 
-    - name: Enable build ccache
+    - name: 启用 build ccache
       uses: klever1988/cachewrtbuild@main
       with:
         ccache: 'true'
         mixkey: 'immortalwrt21-cortexa7-vfpv4'
         prefix: ${{ github.workspace }}/openwrt
 
-    - name: Load custom feeds
+    - name: 加载自定义feeds
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
         chmod +x $DIY_P1_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P1_SH
    
-    - name: Update feeds
+    - name: 更新feeds
       run: cd openwrt && ./scripts/feeds update -a
 
-    - name: Fix golang version
+    - name: 修复golang版本
       run: |
         cd openwrt
         rm -rf feeds/packages/lang/golang
         git clone https://github.com/kenzok8/golang feeds/packages/lang/golang
 
-    - name: Install feeds
+    - name: 安装feeds
       run: cd openwrt && ./scripts/feeds install -a
 
-    - name: Upgrade some network software version
+    - name: 下载升级代理包
       run: |
         cd openwrt
 
@@ -146,7 +148,7 @@ jobs:
         unzip luci-app-turboacc.zip -d feeds/luci/applications/
         rm -rf luci-app-turboacc.zip
 
-    - name: Load custom configuration
+    - name: 加载自定义配置
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
@@ -154,33 +156,28 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
 
-    # - name: SSH connection to Actions
-    #   uses: P3TERX/ssh2actions@v1.0.0
-    #   if: (github.event.inputs.ssh == 'true' && github.event.inputs.ssh  != 'false') || contains(github.event.action, 'ssh')
-    #   env:
-    #     TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-    #     TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-
-    - name: Setup Debug Session
+    - name: SSH远程连接
       uses: csexton/debugger-action@master
 
-    - name: Fix some download failed first
+    - name: 下载失败备份方法
       run: |
         cd openwrt
         mkdir dl
         wget "https://www.dropbox.com/scl/fi/9ts30p2csnlb9imaf8k68/backports-20210222-5.4-qsdk-11.5.0.5.tar.xz?rlkey=sntbyfjgg86gu2uoocgb9ggp1&st=7w81hl56&dl=1" -O dl/backports-20210222-5.4-qsdk-11.5.0.5.tar.xz
         wget "https://www.dropbox.com/scl/fi/gu7ge6jmefn72ttuop1zs/linux-5.4-qsdk-11.5.0.5.tar.xz?rlkey=tdpq0ye35x290frbh7i8uqrm8&st=jjvegqrr&dl=1" -O dl/linux-5.4-qsdk-11.5.0.5.tar.xz
 
-    - name: Download package
+    - name: 下载依赖包
       id: package
       run: |
         cd openwrt
         make defconfig
         make download -j8
+        : '列出下载不完整的文件，根据大佬的经验，小于1k的文件基本属于不完整'
         find dl -size -1024c -exec ls -l {} \;
+        : '如果存在这样的文件可以使用下面命令 删除小于1K的文件'
         find dl -size -1024c -exec rm -f {} \;
 
-    - name: Compile the firmware
+    - name: 编译固件
       id: compile
       run: |
         cd openwrt
@@ -191,18 +188,18 @@ jobs:
         [ -s DEVICE_NAME ] && echo "DEVICE_NAME=_$(cat DEVICE_NAME)" >> $GITHUB_ENV
         echo "FILE_DATE=_$(date +"%Y%m%d%H%M")" >> $GITHUB_ENV
         
-    - name: Check space usage
+    - name: 查看剩余磁盘空间
       if: (!cancelled())
       run: df -hT
 
-    - name: Upload bin directory
+    - name: 上传bin目录
       uses: actions/upload-artifact@main
       if: steps.compile.outputs.status == 'success' && env.UPLOAD_BIN_DIR == 'true'
       with:
         name: OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: openwrt/bin
 
-    - name: Organize files
+    - name: 整理文件
       id: organize
       if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
       run: |
@@ -211,14 +208,14 @@ jobs:
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "status=success" >> $GITHUB_OUTPUT
 
-    - name: Upload firmware directory
+    - name: 上传firmware目录
       uses: actions/upload-artifact@main
       if: steps.organize.outputs.status == 'success' && !cancelled()
       with:
         name: OpenWrt_firmware${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: ${{ env.FIRMWARE }}
 
-    - name: Generate release tag
+    - name: 生成版本号
       id: tag
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       run: |
@@ -226,7 +223,7 @@ jobs:
         touch release.txt
         echo "status=success" >> $GITHUB_OUTPUT
 
-    - name: Upload firmware to release
+    - name: 发布Release
       uses: softprops/action-gh-release@v1
       if: steps.tag.outputs.status == 'success' && !cancelled()
       env:
@@ -236,13 +233,13 @@ jobs:
         body_path: release.txt
         files: ${{ env.FIRMWARE }}/*
 
-    - name: Delete workflow runs
+    - name: 删除工作流
       uses: Mattraks/delete-workflow-runs@main
       with:
         retain_days: 1
         keep_minimum_runs: 3
 
-    - name: Remove old Releases
+    - name: 删除旧Release
       uses: dev-drprasad/delete-older-releases@v0.2.1
       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
       with:

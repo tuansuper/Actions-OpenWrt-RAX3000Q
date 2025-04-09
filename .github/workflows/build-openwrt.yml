@@ -43,7 +43,7 @@ jobs:
       uses: actions/checkout@main
 
     - name: Enable SSH
-      if: ${{ inputs.ssh == 'true' }}  # 严格匹配字符串
+      if: ${{ inputs.ssh == 'true' }}
       run: |
         echo "SSH on!"
     

@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       ssh:
-        description: 'SSH connection to Actions'
+        description: '通过SSH连接Github Actions'
         required: false
         default: 'false'
         type: boolean
@@ -42,6 +42,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@main
 
+    - name: Enable SSH
+      if: ${{ inputs.ssh == 'true' }}  # 严格匹配字符串
+      run: echo "SSH 开启!"
+    
     - name: 初始化环境
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -157,6 +161,7 @@ jobs:
         $GITHUB_WORKSPACE/$DIY_P2_SH
 
     - name: SSH远程连接
+      if: ${{ inputs.ssh == 'true' }}
       uses: csexton/debugger-action@master
 
     - name: 下载失败备份方法

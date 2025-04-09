@@ -44,7 +44,8 @@ jobs:
 
     - name: Enable SSH
       if: ${{ inputs.ssh == 'true' }}  # 严格匹配字符串
-      run: echo "SSH 开启!"
+      run: |
+        echo "SSH 开启!"
     
     - name: 初始化环境
       env:

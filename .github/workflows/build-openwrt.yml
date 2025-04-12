@@ -23,7 +23,7 @@ on:
   #   - cron: 0 8 * * 2
 
 env:
-  REPO_URL: https://github.com/immortalwrt/immortalwrt/blob/openwrt-21.02
+  REPO_URL: https://github.com/kkstone/immortalwrt-ipq50xx
   REPO_BRANCH: openwrt-21.02
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: .config

@@ -123,7 +123,7 @@ jobs:
     - name: 下载升级代理包
       run: |
         cd openwrt
-
+        : <<'COMMENT'
         rm -rf feeds/packages/net/natmap
         wget -r --no-parent https://cdn.jsdelivr.net/gh/immortalwrt/packages@master/net/natmap/
         cp -rf cdn.jsdelivr.net/gh/immortalwrt/packages@master/net/natmap feeds/packages/net/natmap/
@@ -152,6 +152,7 @@ jobs:
         rm -rf feeds/luci/applications/luci-app-turboacc
         unzip luci-app-turboacc.zip -d feeds/luci/applications/
         rm -rf luci-app-turboacc.zip
+        COMMENT
 
     - name: 加载自定义配置
       run: |

@@ -41,11 +41,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@main
-
-    - name: Enable SSH
-      if: ${{ inputs.ssh == 'true' }}
-      run: |
-        echo "SSH on!"
     
     - name: 初始化环境
       env:
@@ -162,7 +157,7 @@ jobs:
         $GITHUB_WORKSPACE/$DIY_P2_SH
 
     - name: SSH远程连接
-      if: ${{ inputs.ssh == 'true' }}
+      if: ${{ inputs.ssh == true }}
       uses: csexton/debugger-action@master
 
     - name: 下载失败备份方法

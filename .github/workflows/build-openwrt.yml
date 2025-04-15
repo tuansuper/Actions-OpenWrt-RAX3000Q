@@ -164,7 +164,9 @@ jobs:
     - name: 退出Action
       if: ${{ inputs.debug == true }}
       run: |
+        echo "status=failure" >> $GITHUB_OUTPUT
         exit 1
+        
     - name: SSH远程连接
       if: ${{ inputs.ssh == true }}
       uses: csexton/debugger-action@master

@@ -10,13 +10,13 @@
 # Description: OpenWrt DIY script part 2 (After Update feeds)
 #
 pwd
-ls
+ls $GITHUB_WORKSPACE
 echo $GITHUB_WORKSPACE
 # bg1 directory
-cd feeds/luci/themes/luci-theme-argon/htdocs/luci-static/argon/img
+cd $GITHUB_WORKSPACE/openwrt/feeds/luci/themes/luci-theme-argon/htdocs/luci-static/argon/img
 # Copy lastest bg1.* file
 find $GITHUB_WORKSPACE/resources/img -name "bg1.*" -maxdepth 1 -type f -printf "%T@ %p\0" | sort -zn | tail -zn 1 | cut -zf2- | xargs -0 -r -I {} cp -- {} .
 # Background
-cd feeds/luci/themes/luci-theme-argon/htdocs/luci-static/argon/background
+cd $GITHUB_WORKSPACE/openwrt/feeds/luci/themes/luci-theme-argon/htdocs/luci-static/argon/background
 rm README.md
 cp $GITHUB_WORKSPACE/resources/background/* .

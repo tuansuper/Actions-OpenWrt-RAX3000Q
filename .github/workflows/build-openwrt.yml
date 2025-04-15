@@ -17,7 +17,7 @@ on:
       ssh:
         description: '通过SSH连接Github Actions'
         required: false
-        default: 'false'
+        default: false
         type: boolean
   # schedule:
   #   - cron: 0 8 * * 2

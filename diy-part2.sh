@@ -9,6 +9,8 @@
 # File name: diy-part2.sh
 # Description: OpenWrt DIY script part 2 (After Update feeds)
 #
+pwd
+ls
 # bg1 directory
 cd openwrt/feeds/luci/themes/luci-theme-argon/htdocs/luci-static/argon/img
 # Copy lastest bg1.* file

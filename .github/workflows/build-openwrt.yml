@@ -19,11 +19,11 @@ on:
         required: false
         default: false
         type: boolean
-      debug:
-        description: 'Debug Github Actions'
-        required: false
-        default: false
-        type: boolean
+      # debug:
+      #   description: 'Debug Github Actions'
+      #   required: false
+      #   default: false
+      #   type: boolean
   # schedule:
   #   - cron: 0 8 * * 2
 
@@ -55,14 +55,15 @@ jobs:
         dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 100
         df -h
         echo "Removing large packages"
-        sudo apt-get remove -y '^dotnet-.*' && \
-        sudo apt-get remove -y '^llvm-.*' && \
-        sudo apt-get remove -y 'php.*' && \
-        sudo apt-get remove -y '^mongodb-.*' && \
-        sudo apt-get remove -y '^mysql-.*' && \
-        sudo apt-get remove -y azure-cli google-cloud-sdk google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri && \
-        sudo apt-get autoremove -y && \
-        sudo apt-get clean 
+        sudo apt-get remove -yqq '^dotnet-.*' && \
+        sudo apt-get remove -yqq '^llvm-.*' && \
+        sudo apt-get remove -yqq 'php.*' && \
+        sudo apt-get remove -yqq '^mongodb-.*' && \
+        sudo apt-get remove -yqq '^mysql-.*' && \
+        sudo apt-get remove -yqq azure-cli google-cloud-sdk hhvm google-chrome-stable firefox powershell mono-devel libgl1-mesa-dri && \
+        sudo apt-get autoremove -yqq && \
+        sudo apt-get clean -qq
+        echo "Disk Usage after removing large packages."
         df -h
         echo "Removing large directories"
         sudo rm -rf /usr/share/dotnet/ && \
@@ -72,6 +73,7 @@ jobs:
         sudo rm -rf /usr/local/share/chromium && \
         sudo rm -rf /usr/local/lib/android && \
         sudo rm -rf /usr/local/lib/node_modules
+        echo "Disk Usage after removing large directories."
         df -h
         sudo -E apt-get -qq update
         sudo -E apt-get -qq install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
@@ -119,7 +121,7 @@ jobs:
     - name: 安装feeds
       run: cd openwrt && ./scripts/feeds install -a
 
-    - name: 下载升级代理包
+    - name: 下载路由器代理插件
       run: |
         cd openwrt
         : <<'COMMENT'
@@ -159,11 +161,6 @@ jobs:
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
-
-    - name: 退出Action
-      if: ${{ inputs.debug == true }}
-      run: |
-        echo "status=failure" >> $GITHUB_OUTPUT
         
     - name: SSH远程连接
       if: ${{ inputs.ssh == true }}

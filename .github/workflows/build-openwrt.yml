@@ -19,11 +19,11 @@ on:
         required: false
         default: false
         type: boolean
-      # debug:
-      #   description: 'Debug Github Actions'
-      #   required: false
-      #   default: false
-      #   type: boolean
+      customArgonBackground:
+        description: '自定义Argon主题背景图'
+        required: false
+        default: false
+        type: boolean
   # schedule:
   #   - cron: 0 8 * * 2
 
@@ -37,16 +37,17 @@ env:
   UPLOAD_BIN_DIR: true
   UPLOAD_FIRMWARE: true
   UPLOAD_RELEASE: true
+  CUSTOM_ARGON_BG: ${{ inputs.customArgonBackground }}
   TZ: Asia/Shanghai
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
     - name: Checkout
       uses: actions/checkout@main
-    
+      
     - name: 初始化环境
       env:
         DEBIAN_FRONTEND: noninteractive

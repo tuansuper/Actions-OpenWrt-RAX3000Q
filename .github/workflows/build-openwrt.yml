@@ -52,6 +52,8 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
+        lscpu
+        free -h
         echo "100 Large packages"
         dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 100
         df -h
